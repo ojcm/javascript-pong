@@ -145,8 +145,10 @@ Pong = {
       case Game.KEY.ONE:  this.startSinglePlayer();    break;
       case Game.KEY.TWO:  this.startDoublePlayer();    break;
       case Game.KEY.ESC:  this.stop(true);             break;
-      case Game.KEY.Q:    if (!this.leftPaddle.auto)  this.leftPaddle.moveUp();    break;
-      case Game.KEY.A:    if (!this.leftPaddle.auto)  this.leftPaddle.moveDown();  break;
+      case Game.KEY.W:    if (!this.leftPaddle.auto)  this.leftPaddle.moveUp();    break; //OJCMC
+      case Game.KEY.S:    if (!this.leftPaddle.auto)  this.leftPaddle.moveDown();  break; //OJCMC
+        case Game.KEY.A: if (!this.leftPaddle.auto) this.leftPaddle.moveLeft(); break; //OJCMA
+        case Game.KEY.D: if (!this.leftPaddle.auto) this.leftPaddle.moveRight(); break; // OJCMA
       case Game.KEY.P:    if (!this.rightPaddle.auto) this.rightPaddle.moveUp();   break;
       case Game.KEY.L:    if (!this.rightPaddle.auto) this.rightPaddle.moveDown(); break;
     }
@@ -154,8 +156,10 @@ Pong = {
 
   onkeyup: function(keyCode) {
     switch(keyCode) {
-      case Game.KEY.Q: if (!this.leftPaddle.auto)  this.leftPaddle.stopMovingUp();    break;
-      case Game.KEY.A: if (!this.leftPaddle.auto)  this.leftPaddle.stopMovingDown();  break;
+      case Game.KEY.W: if (!this.leftPaddle.auto)  this.leftPaddle.stopMovingUp();    break; //OJCMC
+        case Game.KEY.S: if (!this.leftPaddle.auto)  this.leftPaddle.stopMovingDown();  break; //OJCMC
+        case Game.KEY.A: if (!this.leftPaddle.auto) this.leftPaddle.stopMovingLeft(); break; //OJCMA
+        case Game.KEY.D: if (!this.leftPaddle.auto) this.leftPaddle.stopMovingRight(); break; // OJCMA
       case Game.KEY.P: if (!this.rightPaddle.auto) this.rightPaddle.stopMovingUp();   break;
       case Game.KEY.L: if (!this.rightPaddle.auto) this.rightPaddle.stopMovingDown(); break;
     }
@@ -275,9 +279,14 @@ Pong = {
       this.height = pong.cfg.paddleHeight;
       this.minY   = pong.cfg.wallWidth;
       this.maxY   = pong.height - pong.cfg.wallWidth - this.height;
+        this.minX   = 0; //OJCMA
+        this.maxX = pong.width/2 - this.width; //OJCMA
       this.speed  = (this.maxY - this.minY) / pong.cfg.paddleSpeed;
       this.setpos(rhs ? pong.width - this.width : 0, this.minY + (this.maxY - this.minY)/2);
+        this.isRightPaddle = rhs;
       this.setdir(0);
+        this.left2 = 0;
+        this.right2 = 0;
     },
 
     setpos: function(x, y) {
@@ -313,18 +322,40 @@ Pong = {
     update: function(dt, ball) {
       if (this.auto)
         this.ai(dt, ball);
-
-      var amount = this.down - this.up;
-      if (amount != 0) {
-        var y = this.y + (amount * dt * this.speed);
+//Changed all this section
+        //leave right pabel as it was
+        var amountY = this.down - this.up;
+        if (this.isRightPaddle){
+        if (amountY != 0) {
+            var y = this.y + (amountY * dt * this.speed);
+            if (y < this.minY)
+                y = this.minY;
+            else if (y > this.maxY)
+                y = this.maxY;
+            this.setpos(this.x, y);
+        }
+        } else {
+        
+    var amountX = this.right2 - this.left2; //is this the right way round?
+        if ((amountY != 0) || (amountX != 0)) {
+            console.log('Right ' + this.right2);
+            console.log('LEft ' + this.left2);
+        var y = this.y + (amountY * dt * this.speed);
+          var x = this.x + (amountX * dt *this.speed); //OJCMA
         if (y < this.minY)
           y = this.minY;
         else if (y > this.maxY)
           y = this.maxY;
-        this.setpos(this.x, y);
+        if (x < this.minX) //OJCMA
+          x = this.minX;//OJCMA
+        else if (x > this.maxX)//OJCMA
+          x = this.maxX;//OJCMA
+        this.setpos(x, y); //OJCMC
       }
+        }
     },
 
+      //Let's ignore AI for now too //OJCMA
     ai: function(dt, ball) {
       if (((ball.x < this.left) && (ball.dx < 0)) ||
           ((ball.x > this.right) && (ball.dx > 0))) {
@@ -351,6 +382,7 @@ Pong = {
       }
     },
 
+      //Let's ignore prediction for now. //OJCMA
     predict: function(ball, dt) {
       // only re-predict if the ball changed direction, or its been some amount of time since last prediction
       if (this.prediction &&
@@ -406,8 +438,12 @@ Pong = {
 
     moveUp:         function() { this.up   = 1; },
     moveDown:       function() { this.down = 1; },
+    moveLeft:       function() { this.left2 = 1; }, //OJCMA
+    moveRight:      function() { this.right2 = 1;}, //OJCMA
     stopMovingUp:   function() { this.up   = 0; },
-    stopMovingDown: function() { this.down = 0; }
+    stopMovingDown: function() { this.down = 0; },
+    stopMovingLeft: function() { this.left2 = 0; }, //OJCMA
+    stopMovingRight:function() { this.right2 = 0;} //OJCMA
 
   },
 

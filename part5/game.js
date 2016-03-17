@@ -180,9 +180,12 @@ Game = {
     ONE:      49,
     TWO:      50,
     A:        65,
+  D: 68, //OJCMA
     L:        76,
     P:        80,
-    Q:        81,
+    //Q:        81, OJCMC
+    S:        83, //OJCMA
+    W:        87, //OJCMA
     TILDA:    192
   },
 
